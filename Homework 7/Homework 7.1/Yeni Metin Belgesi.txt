@@ -1,0 +1,162 @@
+package Example;
+
+class App {
+	public static void main(String [] args) 
+	{		
+		LottoSimulation.run();		
+	}
+}
+
+class LottoSimulation {
+	public static void run() 
+	{
+		
+		java.util.Scanner kb = new java.util.Scanner(System.in);
+
+		System.out.println("Sayı giriniz");
+		int n = Integer.parseInt(kb.nextLine());
+
+		LottoProbabiltySimulation simulation = new LottoProbabiltySimulation(n);
+		simulation.run();
+
+		System.out.printf("1. oyunun kazanam olasılığı:%f%n", simulation.game1Prob);
+		System.out.printf("2. oyunun kazanam olasılığı:%f%n", simulation.game2Prob);
+		System.out.printf("3. oyunun kazanam olasılığı:%f%n", simulation.game3Prob);
+	}
+}
+
+class LottoProbabiltySimulation {
+	public int count;
+	public double game1Prob;
+	public double game2Prob;
+	public double game3Prob;
+
+	public LottoProbabiltySimulation(int n) 
+	{
+		count = n;
+	}
+	public void run() 
+	{
+		java.util.Random r = new java.util.Random();
+		Lotto lotto = new Lotto(r);
+
+		int win1Count = 0;
+		int win2Count = 0;
+		int win3Count = 0;
+
+
+		for (int i = 0; i < count; i++) {
+			lotto.play();
+			if(lotto.winGame1)
+				win1Count++;
+			if(lotto.winGame2)
+				win2Count++;
+			if(lotto.winGame3)
+				win3Count++;
+		}
+
+		game1Prob = (double)win1Count / count;
+		game2Prob = (double)win2Count / count;
+		game3Prob = (double)win3Count / count;
+	}
+}
+
+class Lotto {
+	public boolean winGame1;
+	public boolean winGame2;
+	public boolean winGame3;
+	public java.util.Random random;
+
+	public int getRandom()
+	{
+		return random.nextInt(99) + 1;
+	}
+
+	
+	public int getFirst() 
+	{
+		return getRandom();
+	}
+
+	public int getSecond(int first) 
+	{
+		int second = 0;
+		while((second = getRandom()) == first)
+			;
+		return second;
+	}
+
+	public int getThird(int first, int second) 
+	{
+		int third = 0;
+
+		while ((third = getRandom()) == first || third == second)
+			;
+
+		return third;
+	}
+
+
+	public void playGame1(int first, int second, int third) 
+	{
+		winGame1 = first + second + third > 150;
+	}
+	public void playGame2(int first, int second, int third) 
+	{
+		winGame2 = NumberUtil.isPrime((long)first + second + third);
+	}
+	public void playGame3(int first, int second, int third) 
+	{
+		int min = Math.min(Math.min(first, second), third); 
+		int max = Math.max(Math.max(first, second), third); 
+		int mid = first + second + third - max - min;
+
+		winGame3 = max - min > mid;
+	}
+
+
+
+	public Lotto(java.util.Random r)
+	{
+		random = r;
+	}
+
+	public void play () 
+	{
+		int first = getFirst();
+		int second = getSecond(first);
+		int third = getThird(first, second);
+
+		playGame1(first, second, third);
+		playGame2(first, second, third);
+		playGame3(first, second, third);
+	}
+}
+
+class NumberUtil {
+	public static boolean isPrime(long val)
+	{
+		if (val <= 1)
+			return false;
+		
+		if (val % 2 == 0)
+			return val == 2;
+		
+		if (val % 3 == 0)
+			return val == 3;
+		
+		if (val % 5 == 0)
+			return val == 5;
+		
+		if (val % 7 == 0)
+			return val == 7;
+
+		int sqrtVal = (int)Math.sqrt(val);
+		
+		for (long i = 11; i * i <= sqrtVal; i += 2)	
+			if (val % i == 0)
+				return false;
+		
+		return true;				
+	}
+}
